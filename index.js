@@ -23,11 +23,24 @@ class SVG {
     }
 
     generateSVGCode() {
-        // Generate the SVG code based on the text, shape, and color properties
-        const svgCode = `<svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
-            <${this.shape} cx="100" cy="100" r="100" stroke="green" stroke-width="4" fill=${this.color} />
-            <text x="100" y="100" fill="black">${this.text}</text>
-        </svg>`;
+        let svgCode = "";
+
+        if (this.shape === "circle") {
+            svgCode = `<svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="100" cy="100" r="100" fill="${this.color}" />
+                <text x="100" y="100" fill="black">${this.text}</text>
+            </svg>`;
+        } else if (this.shape === "triangle") {
+            svgCode = `<svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+                <polygon points="100,20 40,180 160,180" fill="${this.color}" />
+                <text x="100" y="100" fill="black">${this.text}</text>
+            </svg>`;
+        } else if (this.shape === "square") {
+            svgCode = `<svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+                <rect x="50" y="50" width="100" height="100" fill="${this.color}" />
+                <text x="100" y="100" fill="black">${this.text}</text>
+            </svg>`;
+        }
 
         return svgCode;
     }
@@ -92,10 +105,10 @@ inquirer.prompt(textPrompt)
                         inquirer.prompt(shapeColorPrompt)
                             .then(shapeColorAnswers => {
                                 const shapeColor = shapeColorAnswers.shapeColor;
-                                shape.setColor(shapeColor);
                                 const svg = new SVG();
                                 svg.setText(text);
                                 svg.setShape(shape);
+                                svg.setColor(shapeColor);
 
                                 // Generate the SVG code using the SVG class
                                 const svgCode = svg.generateSVGCode();
