@@ -1,11 +1,13 @@
 const fs = require('fs');
+const path = require('path');
 const inquirer = require('inquirer');
 
-// Define the SVG class with text and shape properties
+// Define the SVG class with text, shape, and color properties
 class SVG {
     constructor() {
         this.text = "";
         this.shape = "";
+        this.color = "";
     }
 
     setText(text) {
@@ -16,20 +18,33 @@ class SVG {
         this.shape = shape;
     }
 
+    setColor(color) {
+        this.color = color;
+    }
+
     generateSVGCode() {
-        // Implement this method to generate the SVG code based on the text and shape properties
-        // You can use the text and shape properties to create the SVG elements
-        // Return the generated SVG code as a string
+        // Generate the SVG code based on the text, shape, and color properties
+        const svgCode = `<svg width="200" height="200" xmlns="http://www.w3.org/2000/svg">
+            <${this.shape} cx="100" cy="100" r="100" stroke="green" stroke-width="4" fill=${this.color} />
+            <text x="100" y="100" fill="black">${this.text}</text>
+        </svg>`;
+
+        return svgCode;
     }
 }
 
-// Function to save the SVG image to a file
+// Function to save the SVG image to a file in the logo.svg folder
 function saveSVGToFile(svgCode) {
-    fs.writeFile('logo.svg', svgCode, (err) => {
+    const folderPath = path.join(__dirname, 'logo.svg');
+    const filePath = path.join(folderPath, 'logo.svg');
+
+    fs.mkdirSync(folderPath, { recursive: true }); // Create the folder if it doesn't exist
+
+    fs.writeFile(filePath, svgCode, (err) => {
         if (err) {
             console.error('Error saving SVG file:', err);
         } else {
-            console.log('SVG file saved as logo.svg');
+            console.log('SVG file saved as logo.svg in logo.svg folder');
             console.log('Generated logo.svg');
         }
     });
@@ -42,40 +57,42 @@ const textPrompt = {
     message: 'Enter up to three characters:'
 };
 
-const textColorPrompt = {
-    type: 'input',
-    name: 'textColor',
-    message: 'Enter the text color (color keyword or hexadecimal number):'
-};
-
-const shapePrompt = {
-    type: 'list',
-    name: 'shape',
-    message: 'Choose a shape:',
-    choices: ['circle', 'triangle', 'square']
-};
-
-const shapeColorPrompt = {
-    type: 'input',
-    name: 'shapeColor',
-    message: 'Enter the shape\'s color (color keyword or hexadecimal number):'
-};
-
-// Run the prompts and save the SVG image to a file
+// Run the prompts for user input
 inquirer.prompt(textPrompt)
     .then(textAnswers => {
         const text = textAnswers.text;
-        return inquirer.prompt(textColorPrompt)
+
+        const textColorPrompt = {
+            type: 'input',
+            name: 'textColor',
+            message: 'Enter the text color (color keyword or hexadecimal number):'
+        };
+
+        const shapePrompt = {
+            type: 'list',
+            name: 'shape',
+            message: 'Choose a shape:',
+            choices: ['circle', 'triangle', 'square']
+        };
+
+        const shapeColorPrompt = {
+            type: 'input',
+            name: 'shapeColor',
+            message: 'Enter the shape\'s color (color keyword or hexadecimal number):'
+        };
+
+        inquirer.prompt(textColorPrompt)
             .then(textColorAnswers => {
                 const textColor = textColorAnswers.textColor;
-                return inquirer.prompt(shapePrompt)
+
+                inquirer.prompt(shapePrompt)
                     .then(shapeAnswers => {
                         const shape = shapeAnswers.shape;
-                        return inquirer.prompt(shapeColorPrompt)
+
+                        inquirer.prompt(shapeColorPrompt)
                             .then(shapeColorAnswers => {
                                 const shapeColor = shapeColorAnswers.shapeColor;
-
-                                // Create an instance of the SVG class
+                                shape.setColor(shapeColor);
                                 const svg = new SVG();
                                 svg.setText(text);
                                 svg.setShape(shape);
@@ -83,10 +100,19 @@ inquirer.prompt(textPrompt)
                                 // Generate the SVG code using the SVG class
                                 const svgCode = svg.generateSVGCode();
 
-                                // Save the SVG image to a file
+                                // Save the SVG file to the logo.svg folder
                                 saveSVGToFile(svgCode);
+                            })
+                            .catch(error => {
+                                console.error('Error:', error);
                             });
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
                     });
+            })
+            .catch(error => {
+                console.error('Error:', error);
             });
     })
     .catch(error => {
